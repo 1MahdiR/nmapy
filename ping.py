@@ -1,22 +1,28 @@
 import platform
 import subprocess
+import socket
 import os
 
 def ping(host):
-    """
-    Returns True if host (str) responds to a ping request.
-    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
-    """
 
-    FNULL = open(os.devnull, 'w')
+    host = socket.gethostbyname(host)
+    print("PING to ({})\nSending ICMP packets...".format(host))
 
-    param = '-n' if platform.system().lower()=='windows' else '-c'
+    def f():
+        FNULL = open(os.devnull, 'w')
 
-    command = ['ping', param, '1', host]
+        param = '-n' if platform.system().lower()=='windows' else '-c'
 
-    return subprocess.call(command, stdout=FNULL,stderr=subprocess.STDOUT) == 0
+        command = ['ping', param, '1', host]
 
+        return subprocess.call(command, stdout=FNULL,stderr=subprocess.STDOUT) == 0
 
+    if f():
+        print("ICMP packet recieved from ({})".format(host))
+        return True
+    #else
+    print("ICMP packet failed.")
+    return False
 
 #for i in range(1,100):
 #    address = '127.0.0.' + str(i)
