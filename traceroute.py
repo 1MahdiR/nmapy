@@ -15,7 +15,8 @@ def parse_ping_output(output):
         is_windows = True
 
     ls = re.findall(ip_pattern, output)
-
+    print(ls)
+    print(output)
     if not is_windows:
         if len(ls) < 3:
             raise Exception("Bad output to process")
@@ -31,7 +32,22 @@ def parse_ping_output(output):
         if ls[0] == ls[1]:
             return (True, ls[1])
 
-        raise Exception("Unexpected error")
+    else:
+        if len(ls) < 2:
+            raise Exception("Bad output to process")
+
+        ls = ls[:-1]
+
+        if len(ls) < 2:
+            return (False, '*')
+
+        if re.search('TTL expired in transit', output):
+            return (False, ls[1])
+
+        if ls[0] == ls[1]:
+            return (True, ls[1])
+
+    raise Exception("Unexpected error")
 
 def traceroute(host, hops=30, size=60, timeout=5):
 
