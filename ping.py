@@ -5,7 +5,12 @@ import os
 
 def ping(host):
 
-    host = socket.gethostbyname(host)
+    try:
+        host = socket.gethostbyname(host)
+    except:
+        print("Unable to find {}. Ping failed.".format(host))
+        return False
+
     print("PING to ({})\nSending ICMP packets...".format(host))
 
     def f():

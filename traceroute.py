@@ -51,7 +51,12 @@ def parse_ping_output(output):
 
 def traceroute(host, hops=30, size=60, timeout=5):
 
-    host_ip = socket.gethostbyname(host)
+    try:
+        host_ip = socket.gethostbyname(host)
+    except:
+        print("Unable to find {}. Ping failed.".format(host))
+        return False
+
     print("Traceroute to {} ({})\n maximum hops: {}\n {} byte packets\n".format(host, host_ip, hops, size))
 
     def f(host, ttl):
