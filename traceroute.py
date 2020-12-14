@@ -15,8 +15,6 @@ def parse_ping_output(output):
         is_windows = True
 
     ls = re.findall(ip_pattern, output)
-    print(ls)
-    print(output)
     if not is_windows:
         if len(ls) < 3:
             raise Exception("Bad output to process")

@@ -3,7 +3,12 @@ from datetime import datetime
 
 def port_scan(host, port_range=(1,65535), timeout=1):
 
-    target = socket.gethostbyname(host)
+    try:
+        target = socket.gethostbyname(host)
+    except:
+        print("Unable to find {}. Port scanning failed.".format(host))
+        return None
+        
     print("Scanning ({}) ports:".format(target))
 
     for port in range(*port_range):
