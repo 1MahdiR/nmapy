@@ -1,33 +1,23 @@
 import platform
 import subprocess
-import socket
 import os
 
-def ping(host):
-
-    try:
-        host = socket.gethostbyname(host)
-    except:
-        print("Unable to find {}. Ping failed.".format(host))
-        return False
-
-    print("PING to ({})\nSending ICMP packets...".format(host))
+def ping(host_ip, timeout):
 
     def f():
         FNULL = open(os.devnull, 'w')
 
-        param = '-n' if platform.system().lower()=='windows' else '-c'
+        count_param = '-n' if platform.system().lower()=='windows' else '-c'
+        timeout_param = '-w' if platform.system().lower()=='windows' else '-W'
 
-        command = ['ping', param, '1', host]
+        command = ['ping', count_param, '1', timeout_param, str(timeout), host_ip]
 
         return subprocess.call(command, stdout=FNULL,stderr=subprocess.STDOUT) == 0
 
     if f():
-        print("ICMP packet recieved from ({})".format(host))
-        return True
+        return (True, "ICMP packet recieved from ({})".format(host_ip))
     #else
-    print("ICMP packet failed.")
-    return False
+    return (False, "ICMP packet failed.")
 
 #for i in range(1,100):
 #    address = '127.0.0.' + str(i)
