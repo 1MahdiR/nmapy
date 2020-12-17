@@ -47,15 +47,7 @@ def parse_ping_output(output):
 
     raise Exception("Unexpected error")
 
-def traceroute(host, hops=30, size=60, timeout=5):
-
-    try:
-        host_ip = socket.gethostbyname(host)
-    except:
-        print("Unable to find {}. Ping failed.".format(host))
-        return False
-
-    print("Traceroute to {} ({})\n maximum hops: {}\n {} byte packets\n".format(host, host_ip, hops, size))
+def traceroute(host_ip, hops=30, size=60, timeout=5):
 
     def f(host, ttl):
         FNULL = open(os.devnull, 'w')

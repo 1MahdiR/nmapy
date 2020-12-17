@@ -10,6 +10,8 @@ import socket
 import subprocess
 
 import ping
+import port_scanner
+import traceroute
 
 IS_WINDOWS = None # True if the os was windows
 MAIN_MENU = '''
@@ -42,29 +44,36 @@ else:
 
 ### Program sections as functions ###
 def ping_a_single_host():
-    clear()
-    print("\n--- Ping a single host ---\n")
-    host = input("Enter a host address or ip: ").strip()
 
     try:
-        host_ip = socket.gethostbyname(host)
-    except:
-        print("Unable to find {}. Ping failed.".format(host))
-        input()
-        return
-
-    timeout = 0
-    while True and timeout == 0:
         clear()
         print("\n--- Ping a single host ---\n")
-        print("Host: {} ({})".format(host, host_ip))
-        timeout = input("\ntimeout value (in seconds): ")
-        if timeout.isdigit():
-            timeout = float(timeout)
-            if timeout > 0:
-                break
+        host = input("Enter a host address or ip: ").strip()
 
-    print("\nSending ICMP packets to {} ({})".format(host, host_ip))
+        try:
+            host_ip = socket.gethostbyname(host)
+        except:
+            print("Unable to find {}. Ping failed.".format(host))
+            input()
+            return
+
+        timeout = 0
+        while True:
+            clear()
+            print("\n--- Ping a single host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            timeout = input("\ntimeout value (in seconds): ")
+            try:
+                timeout = float(timeout)
+                if timeout > 0:
+                    break
+            except:
+                continue
+
+        print("\nSending ICMP packets to {} ({})".format(host, host_ip))
+
+    except KeyboardInterrupt:
+        return
 
     total_packets = 0
     packets_recieved = 0
@@ -80,26 +89,31 @@ def ping_a_single_host():
     except KeyboardInterrupt:
         print("\n{} packets transmitted, {} received, {:.2f}% packet loss".format(
                     total_packets, packets_recieved, ((total_packets- packets_recieved)/total_packets)*100))
-        input()
+        try:
+            input()
+        except KeyboardInterrupt:
+            return
 
 def ping_multiple_hosts():
-    ls_hosts = []
 
-    while True:
-        clear()
-        print("\n--- Ping multiple hosts ---\n")
-        if ls_hosts:
-            print("Hosts: ")
-            for i in ls_hosts:
-                print("\t({})".format(i))
-            print()
-        new_host = input("Enter a host address or ip (Enter nothing to continue): ")
-        if len(new_host.strip()) == 0:
-            break
-        ls_hosts.append(new_host)
-
-    print()
     try:
+        ls_hosts = []
+
+        while True:
+            clear()
+            print("\n--- Ping multiple hosts ---\n")
+            if ls_hosts:
+                print("Hosts: ")
+                for i in ls_hosts:
+                    print("\t({})".format(i))
+                print()
+            new_host = input("Enter a host address or ip (Enter nothing to continue): ")
+            if len(new_host.strip()) == 0:
+                break
+            ls_hosts.append(new_host)
+
+        print()
+
         for host in ls_hosts:
             try:
                 host_ip = socket.gethostbyname(host)
@@ -108,7 +122,7 @@ def ping_multiple_hosts():
                 continue
             tup = ping.ping(host_ip, 1)
             if tup[0] == True:
-                print("RECIEVED: Recieved response from host {} ({})".format(host, host_ip))
+                print("RECIEVED: Recieved response from {} ({})".format(host, host_ip))
             else:
                 print("FAILED: Did not recieve a response from host {} ({})".format(host, host_ip))
 
@@ -117,12 +131,124 @@ def ping_multiple_hosts():
         return
 
 def scan_ports_on_a_host():
-    print('scan_ports_on_a_host')
-    sleep(1)
+
+    try:
+        clear()
+        print("\n--- Scan ports on a host ---\n")
+        host = input("Enter a host address or ip: ").strip()
+
+        try:
+            host_ip = socket.gethostbyname(host)
+        except:
+            print("Unable to find {}. Port scan failed.".format(host))
+            input()
+            return
+
+        while True:
+            clear()
+            print("\n--- Scan ports on a host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            port_range = input("\nEnter the port number range (1-65534): ").split(":")
+            try:
+                if len(port_range) == 1 or port_range[0] == port_range[1]:
+                    port_range = [int(port_range[0]), int(port_range[0])+1]
+                else:
+                    port_range = [int(port_range[0]), int(port_range[1])+1]
+            except:
+                continue
+
+            if port_range[0] <= port_range[1] and port_range[0] > 0 and port_range[1] > 0:
+                break
+
+        while True:
+            clear()
+            print("\n--- Ping a single host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            print("\nPort range: ({}-{})".format(port_range[0], port_range[1]))
+            timeout = input("\ntimeout value (in seconds): ")
+            try:
+                timeout = float(timeout)
+                if timeout > 0:
+                    break
+            except:
+                continue
+
+        print("\nChecking ports ({}-{}) of {} ({})".format(port_range[0], port_range[1]-1,
+                                                            host, host_ip))
+        open_ports = port_scanner.port_scan(host_ip, (port_range[0], port_range[1]), timeout=timeout)
+
+        print("\nOpen ports in ({}-{}):".format(port_range[0], port_range[1]))
+        if open_ports:
+            for i in open_ports:
+                print("\t{}".format(i))
+        else:
+            print("\tNo open ports")
+        input()
+
+    except KeyboardInterrupt:
+        return
 
 def traceroute_a_host():
-    print('traceroute_a_host')
-    sleep(1)
+    try:
+        clear()
+        print("\n--- Traceroute a host ---\n")
+        host = input("Enter a host address or ip: ").strip()
+
+        try:
+            host_ip = socket.gethostbyname(host)
+        except:
+            print("Unable to find {}. Traceroute failed.".format(host))
+            input()
+            return
+
+        hops = 0
+        while True:
+            clear()
+            print("\n--- Traceroute a host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            hops = input("\nnumber of hops: ")
+            try:
+                hops = int(hops)
+                if hops > 0:
+                    break
+            except:
+                continue
+
+        size = 0
+        while True:
+            clear()
+            print("\n--- Traceroute a host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            print("Hops: {}".format(hops))
+            size = input("\npacket size (in bytes): ")
+            try:
+                size = int(size)
+                if size > 0:
+                    break
+            except:
+                continue
+
+        timeout = 0
+        while True:
+            clear()
+            print("\n--- Traceroute a host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+            print("Hops: {}".format(hops))
+            print("Size: {} bytes".format(size))
+            timeout = input("\ntimeout value (in seconds): ")
+            try:
+                timeout = float(timeout)
+                if timeout > 0:
+                    break
+            except:
+                continue
+
+        print("\nTraceroute to {} ({})\n maximum hops: {}\n {} byte packets\n".format(host, host_ip, hops, size))
+        traceroute.traceroute(host_ip, hops=hops, size=size, timeout=timeout)
+        input()
+
+    except KeyboardInterrupt:
+        return
 
 ### Main menu controller ###
 def main_menu_controller(s):
@@ -140,9 +266,9 @@ while True:
     main_menu()
 
     try:
-        user_input = input('Command (1-4): ')
+        user_input = input('Command (1-4): ').strip()
 
-        if len(user_input) > 0 and user_input in "1234":
+        if len(user_input) == 1 and user_input in "1234":
             main_menu_controller(user_input)
 
     except KeyboardInterrupt:
