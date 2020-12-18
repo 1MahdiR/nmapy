@@ -3,6 +3,7 @@ from datetime import datetime
 
 def port_scan(host_ip, port_range=(1,65535), timeout=1):
 
+    # setting the timeout value for connection
     socket.setdefaulttimeout(timeout)
 
     open_ports = []

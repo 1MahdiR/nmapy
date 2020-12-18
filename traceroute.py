@@ -2,9 +2,8 @@ import platform
 import subprocess
 import socket
 import re
-import os
 
-
+# This function will get ping data by processing its output
 # ping argument must be an ip address
 def parse_ping_output(output):
 
@@ -21,12 +20,15 @@ def parse_ping_output(output):
 
         ls = ls[1:-1]
 
+        # if no ICMP reply recieved return a '*' and false
         if len(ls) < 2:
             return (False, '*')
 
+        # if ttl of packet exceeded return false
         if re.search('Time to live exceeded', output):
             return (False, ls[1])
 
+        # if packet reached its destination return true
         if ls[0] == ls[1]:
             return (True, ls[1])
 
@@ -36,12 +38,15 @@ def parse_ping_output(output):
 
         ls = ls[:-1]
 
+        # if no ICMP reply recieved return a '*' and false
         if len(ls) < 2:
             return (False, '*')
 
+        # if ttl of packet exceeded return false
         if re.search('TTL expired in transit', output):
             return (False, ls[1])
 
+            # if packet reached its destination return true
         if ls[0] == ls[1]:
             return (True, ls[1])
 
@@ -50,20 +55,21 @@ def parse_ping_output(output):
 def traceroute(host_ip, hops=30, size=60, timeout=5):
 
     def f(host, ttl):
-        FNULL = open(os.devnull, 'w')
 
-        count_param = '-n' if platform.system().lower()=='windows' else '-c'
-        ttl_param = '-i' if platform.system().lower()=='windows' else '-t'
-        size_param = '-l' if platform.system().lower()=='windows' else '-s'
-        timeout_param = '-w' if platform.system().lower()=='windows' else '-W'
+        count_param = '-n' if platform.system().lower()=='windows' else '-c' # ping count parameter
+        ttl_param = '-i' if platform.system().lower()=='windows' else '-t' # ping time to live paramter
+        size_param = '-l' if platform.system().lower()=='windows' else '-s' # ping packet size parameter
+        timeout_param = '-w' if platform.system().lower()=='windows' else '-W' # ping timeout parameter
 
         command = ['ping', count_param, '1', ttl_param, str(ttl), size_param, str(size), timeout_param, str(timeout), host]
 
+        # returns ping output as bytes
         return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+    # returns true, if a packet reaches its destination within specified hops
     for ttl in range(1, hops+1):
         output = f(host_ip, ttl)
-        tup = parse_ping_output(output.stdout.read().decode())
+        tup = parse_ping_output(output.stdout.read().decode()) # get ping status by processing its output
         print("{}".format(ttl), end="")
         if tup[0]:
             print("\t{}".format(tup[1]))
