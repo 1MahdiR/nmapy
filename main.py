@@ -38,7 +38,7 @@ else:
 
 # function for clearing the console
 if IS_WINDOWS:
-    clear = lambda: subprocess.call('cls')
+    clear = lambda: os.system('cls')
 else:
      clear = lambda: subprocess.call('clear')
 
@@ -83,7 +83,7 @@ def ping_a_single_host():
         print("\nSending ICMP packets to {} ({})".format(host, host_ip))
 
     ### will return to main menu with a keyboard interrupt (Ctrl+C)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         return
 
     total_packets = 0
@@ -108,7 +108,7 @@ def ping_a_single_host():
             input()
 
         ### will return to main menu with a keyboard interrupt (Ctrl+C)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             return
 
 def ping_multiple_hosts():
@@ -127,9 +127,10 @@ def ping_multiple_hosts():
                     print("\t({})".format(i))
                 print()
             new_host = input("Enter a host address or ip (Enter nothing to continue): ")
-            if len(new_host.strip()) == 0:
+            if len(new_host.strip()) == 0 and len(ls_hosts) != 0:
                 break
-            ls_hosts.append(new_host)
+            elif len(new_host.strip()) != 0:
+                ls_hosts.append(new_host)
 
         print()
 
@@ -141,7 +142,7 @@ def ping_multiple_hosts():
             except:
                 print("FAILED: Unable to find {}. Ping failed.".format(host)) ### if resolve fails
                 continue
-            tup = ping.ping(host_ip, 1) ### send an ICMP packet to host
+            tup = ping.ping(host_ip, 2) ### send an ICMP packet to host
             if tup[0] == True: ### if recieved an ICMP reply
                 print("RECIEVED: Recieved response from {} ({})".format(host, host_ip))
             else:
@@ -150,7 +151,7 @@ def ping_multiple_hosts():
         input()
 
     ### will return to main menu with a keyboard interrupt (Ctrl+C)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         return
 
 def scan_ports_on_a_host():
@@ -229,7 +230,7 @@ def scan_ports_on_a_host():
         input()
 
     ### will return to main menu with a keyboard interrupt (Ctrl+C)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         return
 
 def traceroute_a_host():
@@ -315,7 +316,7 @@ def traceroute_a_host():
         input()
 
     ### will return to main menu with a keyboard interrupt (Ctrl+C)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         return
 
 ### Main menu controller ###
@@ -341,6 +342,6 @@ while True:
         if len(user_input) == 1 and user_input in "1234":
             main_menu_controller(user_input)
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         print()
         break
