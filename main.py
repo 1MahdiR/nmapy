@@ -36,6 +36,7 @@ if platform.system().lower()=='windows':
 else:
     IS_WINDOWS = False
 
+# function for clearing the console
 if IS_WINDOWS:
     clear = lambda: subprocess.call('cls')
 else:
@@ -50,6 +51,8 @@ def ping_a_single_host():
         print("\n--- Ping a single host ---\n")
         host = input("Enter a host address or ip: ").strip()
 
+        ### tries to resolve host address to ip
+        ### if resolve fails function will return
         try:
             host_ip = socket.gethostbyname(host)
         except:
@@ -57,12 +60,19 @@ def ping_a_single_host():
             input()
             return
 
+        ### get the timeout value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         timeout = 0
         while True:
             clear()
             print("\n--- Ping a single host ---\n")
             print("Host: {} ({})".format(host, host_ip))
-            timeout = input("\ntimeout value (in seconds): ")
+
+            ### default timeout value: 1
+            timeout = input("\ntimeout value (in seconds) [1]: ").strip()
+            if timeout == "":
+                timeout = 1
             try:
                 timeout = float(timeout)
                 if timeout > 0:
@@ -72,6 +82,7 @@ def ping_a_single_host():
 
         print("\nSending ICMP packets to {} ({})".format(host, host_ip))
 
+    ### will return to main menu with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
         return
 
@@ -80,17 +91,23 @@ def ping_a_single_host():
 
     try:
         while True:
+            total_packets += 1 ### total packets increment
             tup = ping.ping(host_ip, timeout)
-            total_packets += 1
             print(tup[1])
-            if tup[0] == True:
+            if tup[0] == True:  ### if received an ICMP reply
                 packets_recieved += 1
             sleep(1)
+
+    ### will stop the ping with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
+
+        ### showing results of ping
         print("\n{} packets transmitted, {} received, {:.2f}% packet loss".format(
-                    total_packets, packets_recieved, ((total_packets- packets_recieved)/total_packets)*100))
+                    total_packets, packets_recieved, ((total_packets - packets_recieved)/total_packets)*100))
         try:
             input()
+
+        ### will return to main menu with a keyboard interrupt (Ctrl+C)
         except KeyboardInterrupt:
             return
 
@@ -99,6 +116,8 @@ def ping_multiple_hosts():
     try:
         ls_hosts = []
 
+        ### get the host addresses from user
+        ### this loop will repeat until user enters blank string
         while True:
             clear()
             print("\n--- Ping multiple hosts ---\n")
@@ -115,18 +134,22 @@ def ping_multiple_hosts():
         print()
 
         for host in ls_hosts:
+            ### tries to resolve host address to ip
+            ### if resolve fails a FAILED message will be shown
             try:
                 host_ip = socket.gethostbyname(host)
             except:
-                print("FAILED: Unable to find {}. Ping failed.".format(host))
+                print("FAILED: Unable to find {}. Ping failed.".format(host)) ### if resolve fails
                 continue
-            tup = ping.ping(host_ip, 1)
-            if tup[0] == True:
+            tup = ping.ping(host_ip, 1) ### send an ICMP packet to host
+            if tup[0] == True: ### if recieved an ICMP reply
                 print("RECIEVED: Recieved response from {} ({})".format(host, host_ip))
             else:
                 print("FAILED: Did not recieve a response from host {} ({})".format(host, host_ip))
 
         input()
+
+    ### will return to main menu with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
         return
 
@@ -137,6 +160,8 @@ def scan_ports_on_a_host():
         print("\n--- Scan ports on a host ---\n")
         host = input("Enter a host address or ip: ").strip()
 
+        ### tries to resolve host address to ip
+        ### if resolve fails function will return
         try:
             host_ip = socket.gethostbyname(host)
         except:
@@ -144,28 +169,46 @@ def scan_ports_on_a_host():
             input()
             return
 
+        ### get the port number range value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         while True:
             clear()
             print("\n--- Scan ports on a host ---\n")
             print("Host: {} ({})".format(host, host_ip))
-            port_range = input("\nEnter the port number range (1-65534): ").split(":")
+
+            ### default port number range value: 1:65535
+            port_range = input("\nEnter the port number range (1-65535) [1:65535]: ").strip()
+            if port_range == "":
+                port_range = "1:65535"
+            port_range = port_range.split(':')
             try:
-                if len(port_range) == 1 or port_range[0] == port_range[1]:
+
+                if len(port_range) == 1 or port_range[0] == port_range[1]: ### if one port was specified
                     port_range = [int(port_range[0]), int(port_range[0])+1]
                 else:
                     port_range = [int(port_range[0]), int(port_range[1])+1]
             except:
                 continue
 
-            if port_range[0] <= port_range[1] and port_range[0] > 0 and port_range[1] > 0:
-                break
+            ### validating user input values
+            if port_range[0] <= port_range[1] and port_range[0] > 0 and port_range[1]-1 > 0:
+                if port_range[0] < 65536 and port_range[1]-1 < 65536:
+                    break
 
+        ### get the timeout value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         while True:
             clear()
-            print("\n--- Ping a single host ---\n")
+            print("\n--- Scan ports on a host ---\n")
             print("Host: {} ({})".format(host, host_ip))
             print("\nPort range: ({}-{})".format(port_range[0], port_range[1]))
-            timeout = input("\ntimeout value (in seconds): ")
+
+            ### default timeout value: 1
+            timeout = input("\ntimeout value (in seconds) [1]: ").strip()
+            if timeout == "":
+                timeout = 1
             try:
                 timeout = float(timeout)
                 if timeout > 0:
@@ -178,13 +221,14 @@ def scan_ports_on_a_host():
         open_ports = port_scanner.port_scan(host_ip, (port_range[0], port_range[1]), timeout=timeout)
 
         print("\nOpen ports in ({}-{}):".format(port_range[0], port_range[1]))
-        if open_ports:
+        if open_ports: ### if open_ports was not empty
             for i in open_ports:
                 print("\t{}".format(i))
         else:
             print("\tNo open ports")
         input()
 
+    ### will return to main menu with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
         return
 
@@ -194,6 +238,8 @@ def traceroute_a_host():
         print("\n--- Traceroute a host ---\n")
         host = input("Enter a host address or ip: ").strip()
 
+        ### tries to resolve host address to ip
+        ### if resolve fails function will return
         try:
             host_ip = socket.gethostbyname(host)
         except:
@@ -201,12 +247,19 @@ def traceroute_a_host():
             input()
             return
 
+        ### get the hops value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         hops = 0
         while True:
             clear()
             print("\n--- Traceroute a host ---\n")
             print("Host: {} ({})".format(host, host_ip))
-            hops = input("\nnumber of hops: ")
+
+            ### default hops value: 30
+            hops = input("\nnumber of hops [30]: ").strip()
+            if hops == "":
+                hops = 30
             try:
                 hops = int(hops)
                 if hops > 0:
@@ -214,13 +267,20 @@ def traceroute_a_host():
             except:
                 continue
 
+        ### get the packet size value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         size = 0
         while True:
             clear()
             print("\n--- Traceroute a host ---\n")
             print("Host: {} ({})".format(host, host_ip))
             print("Hops: {}".format(hops))
-            size = input("\npacket size (in bytes): ")
+
+            ### default size value: 60
+            size = input("\npacket size (in bytes) [60]: ").strip()
+            if size == "":
+                size = 60
             try:
                 size = int(size)
                 if size > 0:
@@ -228,6 +288,9 @@ def traceroute_a_host():
             except:
                 continue
 
+        ### get the timeout value from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
         timeout = 0
         while True:
             clear()
@@ -235,7 +298,11 @@ def traceroute_a_host():
             print("Host: {} ({})".format(host, host_ip))
             print("Hops: {}".format(hops))
             print("Size: {} bytes".format(size))
-            timeout = input("\ntimeout value (in seconds): ")
+
+            ### default timeout value
+            timeout = input("\ntimeout value (in seconds) [1]: ").strip()
+            if timeout == "":
+                timeout = 1
             try:
                 timeout = float(timeout)
                 if timeout > 0:
@@ -247,6 +314,7 @@ def traceroute_a_host():
         traceroute.traceroute(host_ip, hops=hops, size=size, timeout=timeout)
         input()
 
+    ### will return to main menu with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
         return
 
@@ -261,6 +329,7 @@ def main_menu_controller(s):
     else:
         traceroute_a_host()
 
+### Main menu ###
 while True:
     clear()
     main_menu()
@@ -268,6 +337,7 @@ while True:
     try:
         user_input = input('Command (1-4): ').strip()
 
+        ### validating main menu command
         if len(user_input) == 1 and user_input in "1234":
             main_menu_controller(user_input)
 
