@@ -12,5 +12,6 @@ A simple network tool written in python
 
 4 > Traceroute a host
 
+--------------------------
 
 Script by MR
