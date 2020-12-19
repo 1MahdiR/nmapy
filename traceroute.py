@@ -1,3 +1,8 @@
+
+###
+# Implements traceroute with ping utility
+###
+
 import platform
 import subprocess
 import socket
