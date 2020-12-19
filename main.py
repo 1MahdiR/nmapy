@@ -1,6 +1,9 @@
 
 ###
-# Main program, runs a user-interface and calls APIs
+# A simple network tool written in python
+#
+# by MR
+# Script is available on github: https://github.com/1MahdiR/nmapy
 ###
 
 import os
