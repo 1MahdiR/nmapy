@@ -1,3 +1,8 @@
+
+###
+# Implements port scanning with socket library
+###
+
 import socket
 from datetime import datetime
 
