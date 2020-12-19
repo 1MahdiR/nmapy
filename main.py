@@ -26,6 +26,7 @@ MAIN_MENU = '''
  2 > Ping multiple hosts
  3 > Scan ports on a host
  4 > Traceroute a host
+ 0 > Exit
 '''
 
 main_menu = lambda: print(MAIN_MENU) # function for printing the main menu
@@ -339,7 +340,9 @@ while True:
         user_input = input('Command (1-4): ').strip()
 
         ### validating main menu command
-        if len(user_input) == 1 and user_input in "1234":
+        if len(user_input) == 1 and user_input in "01234":
+            if user_input == "0":
+                break
             main_menu_controller(user_input)
 
     except (KeyboardInterrupt, EOFError):
