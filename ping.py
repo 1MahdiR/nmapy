@@ -1,3 +1,8 @@
+
+###
+# ping utility function
+###
+
 import platform
 import subprocess
 import os
