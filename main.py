@@ -187,6 +187,8 @@ def scan_ports_on_a_host():
             if port_range == "":
                 port_range = "1:65535"
             port_range = port_range.split(':')
+            if not port_range[0].isdigit() or not port_range[1].isdigit():
+                continue
             try:
 
                 if len(port_range) == 1 or port_range[0] == port_range[1]: ### if one port was specified
