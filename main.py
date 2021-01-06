@@ -64,6 +64,31 @@ def ping_a_single_host():
             input()
             return
 
+
+        ### get how many packets will be sent from user
+        ### this loop will repeat until user enters a valid value
+        ### if user enters a blank string the default value will be set
+        ### the default value is 0 which will ping the host continuously
+        while True:
+            clear()
+            print("\n--- Ping a single host ---\n")
+            print("Host: {} ({})".format(host, host_ip))
+
+            ### default value: 0
+            count = input("\nNumber of packets [0]: ").strip()
+            if not count.isdigit() and count != '':
+                continue
+            if count == "":
+                count = 0
+            try:
+                count = int(count)
+                if count >= 0:
+                    break
+            except:
+                continue
+
+        cont_ping = True if count == 0 else False
+
         ### get the timeout value from user
         ### this loop will repeat until user enters a valid value
         ### if user enters a blank string the default value will be set
@@ -72,6 +97,10 @@ def ping_a_single_host():
             clear()
             print("\n--- Ping a single host ---\n")
             print("Host: {} ({})".format(host, host_ip))
+            if cont_ping:
+                print("Number of packets: continuously")
+            else:
+                print("Number of packets: {}".format(count))
 
             ### default timeout value: 1
             timeout = input("\ntimeout value (in seconds) [1]: ").strip()
@@ -94,16 +123,20 @@ def ping_a_single_host():
     packets_recieved = 0
 
     try:
-        while True:
+        while count > 0 or cont_ping:
             total_packets += 1 ### total packets increment
             tup = ping.ping(host_ip, timeout)
             print(tup[1])
             if tup[0] == True:  ### if received an ICMP reply
                 packets_recieved += 1
+            count -= 1
             sleep(1)
 
     ### will stop the ping with a keyboard interrupt (Ctrl+C)
     except KeyboardInterrupt:
+            pass
+
+    finally:
 
         ### showing results of ping
         print("\n{} packets transmitted, {} received, {:.2f}% packet loss".format(
