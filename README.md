@@ -2,6 +2,8 @@
 # Nmapy
 A simple network tool written in python
 
+![nmapy main menu](screenshot_1.png)
+
 ## Nmapy functionalities:
 
 1 > Ping a single host
